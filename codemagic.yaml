@@ -1,13 +1,18 @@
 workflows:
   default:
-    name: Default Workflow
-    scripts:
-      - name: Pre-build Script
-        script: |
-          flutter create .
-          flutter pub get
+    name: Habit Garden Workflow
     environment:
       vars:
         FLUTTER_CHANNEL: stable
+    scripts:
+      - name: Pre-build Script
+        script: |
+          echo "Generating Android folder if missing..."
+          flutter create .
+          flutter pub get
+      - name: Build APK
+        script: |
+          echo "Building release APK..."
+          flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
