@@ -5,14 +5,14 @@ workflows:
       vars:
         FLUTTER_CHANNEL: stable
     scripts:
-      - name: Pre-build Script
+      - name: Pre-build
         script: |
-          echo "Generating Android folder if missing..."
+          echo "Ensuring Android folder exists"
           flutter create .
           flutter pub get
       - name: Build APK
         script: |
-          echo "Building release APK..."
-          flutter build apk --release
+          echo "Building release APK"
+          flutter build apk --release --build-dir=build
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
