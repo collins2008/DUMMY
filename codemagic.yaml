@@ -1,0 +1,14 @@
+workflows:
+  default:
+    name: Default Workflow
+    scripts:
+      - name: Pre-build Script
+        script: |
+          flutter create .
+          flutter pub get
+    environment:
+      vars:
+        FLUTTER_CHANNEL: stable
+    publishing:
+      apk:
+        enabled: true
