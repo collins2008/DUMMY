@@ -1,0 +1,25 @@
+name: habit_garden
+description: A habit tracker with auto-tick and custom streak animations.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  lottie: ^2.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/lottie/fire.json
+    - assets/lottie/plant.json
+    - assets/lottie/book.json
+    - assets/lottie/gem.json
+    - assets/lottie/moon.json
