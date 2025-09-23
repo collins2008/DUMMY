@@ -9,6 +9,5 @@ workflows:
     environment:
       vars:
         FLUTTER_CHANNEL: stable
-    publishing:
-      apk:
-        enabled: true
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
