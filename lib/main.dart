@@ -1,5 +1,4 @@
-// HabitTracker - Flutter MVP UI
-// Single-file Flutter app (lib/main.dart)
+// HabitTracker - Flutter MVP UI with Widget Stub
 // ---------------------------------------------------------
 // What this file contains:
 // - Onboarding screen
@@ -7,19 +6,20 @@
 // - Add Habit screen (form + streak-style selector)
 // - Habit detail screen (calendar-like view + stats)
 // - Simple in-memory store (singleton) for habits
-// - Basic animations (animated icon placeholders, confetti stub)
+// - Basic animations (animated icon placeholders, Lottie stubs)
+// - Stub for Android Homescreen Widget integration
 //
-// Notes & next steps:
-// 1) This is UI-first and uses an in-memory store. To persist locally add Hive/SharedPreferences/SQLite.
-// 2) Animations: Lottie is referenced in the UI (placeholders). Add Lottie JSON files under assets and include in pubspec.
-// 3) Android homescreen widget is not included here (requires platform-specific AppWidget). I left comments where to integrate.
-// 4) To run: create a Flutter project and replace lib/main.dart with this file. Add dependency `lottie: ^2.2.0` to pubspec.
+// Notes:
+// 1) Homescreen widget requires native Android code (AppWidgetProvider).
+//    This Dart stub shows where to connect with `home_widget` package.
+// 2) To persist data, add Hive/SharedPreferences/SQLite.
 // ---------------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:math';
 
+// ---------------------------- MAIN ----------------------------
 void main() {
   runApp(HabitApp());
 }
@@ -46,7 +46,6 @@ class Habit {
         this.misses = misses ?? [];
 }
 
-// Simple singleton in-memory store. Replace with persistent store later.
 class HabitStore extends ChangeNotifier {
   static final HabitStore _instance = HabitStore._internal();
   factory HabitStore() => _instance;
@@ -69,7 +68,6 @@ class HabitStore extends ChangeNotifier {
   }
 
   void toggleToday(Habit h) {
-    // If user unticks today (remove auto tick) -> add to misses
     final today = DateTime.now();
     final day = DateTime(today.year, today.month, today.day);
     if (h.misses.any((d) => isSameDay(d, day))) {
@@ -77,23 +75,19 @@ class HabitStore extends ChangeNotifier {
     } else {
       h.misses.add(day);
     }
-    // Recalculate streak simply: if last day missed -> reset to 0 else increment
     h.streak = calculateStreak(h);
     notifyListeners();
   }
 
   int calculateStreak(Habit h) {
-    // naive: count days from today backwards until a miss is found
     int count = 0;
     DateTime day = DateTime.now();
     day = DateTime(day.year, day.month, day.day);
     while (true) {
       if (h.misses.any((d) => isSameDay(d, day))) break;
-      // stop if before startDate
       if (day.isBefore(DateTime(h.startDate.year, h.startDate.month, h.startDate.day))) break;
       count++;
       day = day.subtract(Duration(days: 1));
-      // safety
       if (count > 10000) break;
     }
     return count;
@@ -165,7 +159,7 @@ class OnboardingScreen extends StatelessWidget {
               SizedBox(height: 24),
               Text('Welcome to Habit Garden', textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
               SizedBox(height: 12),
-              Text('Habits that grow with you. We auto-tick each day, so you keep your flow — just untick if you miss.', textAlign: TextAlign.center),
+              Text('Habits that grow with you. Auto-tick daily; untick if you miss.', textAlign: TextAlign.center),
               Spacer(),
               ElevatedButton(onPressed: onContinue, child: Padding(padding: EdgeInsets.symmetric(vertical: 16), child: Text('Get started'))),
               SizedBox(height: 12),
@@ -211,8 +205,8 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Habit Garden'),
         actions: [
           IconButton(onPressed: () {
-            // TODO: Open settings
-          }, icon: Icon(Icons.settings))
+            Navigator.push(context, MaterialPageRoute(builder: (_) => WidgetInfoScreen()));
+          }, icon: Icon(Icons.widgets))
         ],
       ),
       body: Padding(
@@ -248,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 12),
           Text('No habits yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
-          Text('Tap + to add your first habit. Each habit can have its own animation style.'),
+          Text('Tap + to add your first habit.'),
         ],
       ),
     );
@@ -263,7 +257,6 @@ class HabitCard extends StatelessWidget {
   HabitCard({required this.habit, required this.onTap, required this.onToggleToday});
 
   Widget _buildIcon(BuildContext context) {
-    // Placeholder: use Lottie when provided
     final map = {
       'fire': 'assets/lottie/fire.json',
       'plant': 'assets/lottie/plant.json',
@@ -275,7 +268,6 @@ class HabitCard extends StatelessWidget {
     if (path != null) {
       return SizedBox(width: 64, height: 64, child: LottieBuilder.asset(path, repeat: true));
     }
-    // fallback
     return CircleAvatar(child: Text(habit.name.substring(0,1).toUpperCase()));
   }
 
@@ -352,7 +344,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 onSaved: (v) => _name = v!.trim(),
               ),
               SizedBox(height: 12),
-              Text('Choose streak style', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Choose style', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -367,7 +359,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                 children: [
                   Checkbox(value: _autoTick, onChanged: (v) => setState(() => _autoTick = v ?? true)),
                   SizedBox(width: 8),
-                  Text('Auto-tick daily (default)')
+                  Text('Auto-tick daily')
                 ],
               ),
               Spacer(),
@@ -400,7 +392,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   }
 }
 
-// ---------------------------- Habit Detail Screen ----------------------------
+// ---------------------------- Habit Detail ----------------------------
 class HabitDetailScreen extends StatefulWidget {
   final Habit habit;
   HabitDetailScreen({required this.habit});
@@ -535,24 +527,20 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
   }
 }
 
-// ---------------------------------------------------------
-// PUBSPEC SNIPPET (Add to your pubspec.yaml):
-//
-// dependencies:
-//   flutter:
-//     sdk: flutter
-//   lottie: ^2.2.0
-//
-// assets:
-//   - assets/lottie/fire.json
-//   - assets/lottie/plant.json
-//   - assets/lottie/book.json
-//   - assets/lottie/gem.json
-//   - assets/lottie/moon.json
-//
-// ---------------------------------------------------------
-// Android widget note:
-// To create a homescreen widget on Android (Samsung), you'll need to implement an AppWidgetProvider in native Android (Kotlin/Java) and use MethodChannel or BackgroundService to fetch data from the Flutter app's local storage. For Flutter-based approaches consider `glance` for Jetpack Glance or the community `home_widget` plugin. Widget animations should be lightweight — consider showing static SVGs/gifs instead of full Lottie in the widget.
-//
-// ---------------------------------------------------------
-// End of file
+// ---------------------------- Widget Stub Screen ----------------------------
+// This screen shows info about Android homescreen widget integration.
+// Later, connect this with `home_widget` plugin.
+
+class WidgetInfoScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Homescreen Widget")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Android Widget Integration", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 12),
+            Text("To enable a homescreen widget,
