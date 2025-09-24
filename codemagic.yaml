@@ -10,9 +10,10 @@ workflows:
           echo "Ensuring Android folder exists"
           flutter create .
           flutter pub get
+          chmod +x android/gradlew   # 👈 fix permissions here
       - name: Build APK
         script: |
           echo "Building release APK"
-          flutter build apk --release --build-dir=build
+          flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
